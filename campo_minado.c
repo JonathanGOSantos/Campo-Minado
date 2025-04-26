@@ -1,54 +1,59 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #define FIELD_SIZE 10
 
 int field[FIELD_SIZE][FIELD_SIZE], current;
-int bombs = 0, reveals = 0;
+char difficulty[7];
+int bombs = 0, reveals = 0, plays = 1;
 int chance, bombs_limit, line_limit;
 int endGame = 0;
 
 void startGame()
 {
   printf("-----------------------------------------------\n");
-  printf("---------|       CAMPO MINADO       |----------\n");
-  printf("---------|    Desenvolvido em C     |----------\n");
-  printf("---------|   Por: Jonathan Santos   |----------\n");
+  printf("---------|       CAMPO MINADO        |---------\n");
+  printf("---------|    Desenvolvido em C      |---------\n");
+  printf("---------|   Por: Jonathan Santos    |---------\n");
   printf("-----------------------------------------------\n");
 }
 
 void setDifficulty()
 {
-  int difficulty;
+  int difficultyLevel;
 
   printf("-----------------------------------------------\n");
-  printf("---------|  Selecao de Dificuldade  |----------\n");
-  printf("---------|       [1] - Facil        |----------\n");
-  printf("---------|       [2] - Medio        |----------\n");
-  printf("---------|      [3] - Dificil       |----------\n");
+  printf("---------|  Selecao de Dificuldade   |---------\n");
+  printf("---------|       [1] - Facil         |---------\n");
+  printf("---------|       [2] - Medio         |---------\n");
+  printf("---------|      [3] - Dificil        |---------\n");
   printf("-----------------------------------------------\n");
   printf("---------| Digite a dificuldade: ");
-  scanf("%d", &difficulty);
+  scanf("%d", &difficultyLevel);
   
-  while (difficulty != 1 && difficulty != 2 && difficulty != 3)
+  while (difficultyLevel != 1 && difficultyLevel != 2 && difficultyLevel != 3)
   {
     printf("---------| Nivel de dificuldade invalida. \n");
     printf("---------| Digite a dificuldade: ");
-    scanf("%d", &difficulty);
+    scanf("%d", &difficultyLevel);
   }
 
-  switch (difficulty)
+  switch (difficultyLevel)
   {
     case 1:
+    strcpy(difficulty, "Facil  ");
     bombs_limit = 8;
     line_limit = 1;
     break;
     case 2:
+    strcpy(difficulty, "Medio  ");
     bombs_limit = 16;
     line_limit = 2;
     break;
     case 3:
+    strcpy(difficulty, "Dificil");
     bombs_limit = 24;
     line_limit = 3;
     break;
@@ -109,8 +114,7 @@ int calculateBombs(int x, int y)
 
 void revealBombCount(int x, int y)
 {
-  // if(x < 1 || x > 8 || y < 1 || y > 8 || current != -1)
-  if(current != -1)
+  if(field[x][y] != -1)
     return;
 
   int bombsCount = calculateBombs(x, y);
@@ -129,6 +133,10 @@ void revealBombCount(int x, int y)
 
 void showField()
 {
+  printf("-----------------------------------------------\n");
+  printf("---------|        Campo Minado       |---------\n");
+  printf("---------|   Dificuldade: %s    |---------\n", difficulty);
+  printf("---------|         Jogada %02d         |---------\n", plays);
   printf("-----------------------------------------------\n");
   for(int i = -1; i < 10; i++)
   {
@@ -182,12 +190,18 @@ void showPos(int pos[2])
   int x = pos[0];
   int y = pos[1];
   current = field[x][y];
-
+  
   if(current == -1)
+  {
     revealBombCount(x, y);
+    plays++;
+  }
+  if(current == 15)
+    endGame = 1;
   
   showField();
-  printf("Ultima posicao aberta: [%d, %d]\n", pos[0], pos[1]);
+  printf("---------| Bombas: [%d]\n", bombs);
+  printf("---------| Ultima posicao aberta: [%d, %d]\n", pos[0], pos[1]);
 }
 
 int play()
@@ -204,6 +218,7 @@ int play()
       exit(1);
       break;
     }
+      
     if(pos[0] < 1 || pos[0] > 8 || pos[1] < 1 || pos[1] > 8)
     {
       printf("Posicao invalida!");
@@ -226,11 +241,16 @@ int main()
   startGame();
   setDifficulty();
   createField();
+  system("cls");
   showField();
+  printf("---------| Bombas: [%d]\n", bombs);
+  
   int result = play();
 
   if(result == 0)
-    printf("Você perdeu!");
+    printf("---------| Voce perdeu!");
   else if(result == 99)
-    printf("Parabens! Voce venceu!");
+    printf("---------| Parabens! Voce venceu!");
+  else
+    printf("---------| Nem venceu nem perdeu, algum erro aconteceu!");
 }
